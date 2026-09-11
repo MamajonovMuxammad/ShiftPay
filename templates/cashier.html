@@ -104,11 +104,8 @@
             <div class="row"><span class="lbl" style="font-size:0.75rem;color:var(--text-3);">Курс</span><span style="font-size:0.75rem;color:var(--text-3);" class="font-num">1 USDT = {{ exchange_rate }} UZS</span></div>
         </div>
 
-        <div style="display:flex;gap:10px;">
-            <a id="demoLink" href="#" target="_blank" class="btn btn-ghost" style="flex:1;font-size:0.8125rem;">
-                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i> Открыть чек
-            </a>
-            <button onclick="resetTerminal()" class="btn btn-ghost" style="flex:1;font-size:0.8125rem;color:var(--text-2);">Отмена</button>
+        <div style="display:flex;justify-content:center;">
+            <button onclick="resetTerminal()" class="btn btn-ghost" style="min-width:140px;font-size:0.875rem;color:var(--text-2);">Отмена</button>
         </div>
     </div>
 
@@ -145,7 +142,7 @@
 {% block scripts %}
 <script>
 const RATE = {{ exchange_rate }};
-let txId = null, pollTimer = null, sseSource = null;
+let txId = null, pollTimer = null;
 
 const inp   = document.getElementById('amountInput');
 const prev  = document.getElementById('usdtPreview');
@@ -194,7 +191,6 @@ async function genInvoice() {
 
         document.getElementById('dUzs').textContent   = amtUzs.toLocaleString('ru-RU') + ' UZS';
         document.getElementById('dUsdt').textContent  = d.amount_usdt.toFixed(2) + ' USDT';
-        document.getElementById('demoLink').href      = d.checkout_url;
 
         document.getElementById('qrCanvas').innerHTML = '';
         new QRCode(document.getElementById('qrCanvas'), {
@@ -214,34 +210,9 @@ async function genInvoice() {
     }
 }
 
-/* ── Auto-close: SSE + fallback polling ── */
+/* ── Reliable polling every 1s ── */
 function startListening(id, uzs, usdt) {
     stopListening();
-
-    // Try SSE first (real-time push)
-    if (typeof EventSource !== 'undefined') {
-        sseSource = new EventSource(`/api/events/${id}`);
-        sseSource.onmessage = e => {
-            if (e.data === 'paid') {
-                stopListening();
-                onPaid(id, uzs, usdt);
-            }
-        };
-        sseSource.onerror = () => {
-            // SSE failed (e.g. Vercel timeout) — fall back to polling
-            stopListening();
-            startPolling(id, uzs, usdt);
-        };
-    } else {
-        startPolling(id, uzs, usdt);
-    }
-
-    // Safety net: also poll every 2s in parallel (handles Vercel 10s SSE limit)
-    startPolling(id, uzs, usdt);
-}
-
-function startPolling(id, uzs, usdt) {
-    if (pollTimer) return; // already running
     pollTimer = setInterval(async () => {
         try {
             const r = await fetch(`/api/transactions/${id}`);
@@ -251,12 +222,11 @@ function startPolling(id, uzs, usdt) {
                 stopListening();
                 onPaid(id, uzs, usdt);
             }
-        } catch(e) {}
-    }, 1500);
+        } catch(e) { /* network hiccup, retry next tick */ }
+    }, 1000);
 }
 
 function stopListening() {
-    if (sseSource) { try { sseSource.close(); } catch(e){} sseSource = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
