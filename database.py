@@ -72,10 +72,11 @@ class DatabaseService:
 
 
 class SupabaseDatabaseService(DatabaseService):
-    """Реализация работы с Supabase через официальный SDK"""
+    """Реализация работы с Supabase через официальный SDK с автоматическим откатом при ошибках таблицы"""
 
     def __init__(self, client):
         self.client = client
+        self.fallback = InMemoryDatabaseService()
         logger.info("Connected to Supabase successfully.")
 
     def create_transaction(
@@ -94,31 +95,45 @@ class SupabaseDatabaseService(DatabaseService):
             "created_at": now_iso
         }
         
-        response = self.client.table("transactions").insert(payload).execute()
-        if response.data and len(response.data) > 0:
-            row = response.data[0]
-            row["merchant_name"] = DEFAULT_MERCHANT_NAME
-            return row
-        payload["merchant_name"] = DEFAULT_MERCHANT_NAME
-        return payload
+        try:
+            response = self.client.table("transactions").insert(payload).execute()
+            if response.data and len(response.data) > 0:
+                row = response.data[0]
+                row["merchant_name"] = DEFAULT_MERCHANT_NAME
+                # Также сохраняем в локальный fallback для надежности
+                self.fallback.transactions[tx_id] = row
+                return row
+            payload["merchant_name"] = DEFAULT_MERCHANT_NAME
+            self.fallback.transactions[tx_id] = payload
+            return payload
+        except Exception as e:
+            logger.error(f"Supabase create_transaction failed: {e}. Falling back to InMemory store.", exc_info=True)
+            return self.fallback.create_transaction(amount_uzs, amount_usdt, merchant_id)
 
     def get_transaction(self, transaction_id: str) -> Optional[Dict[str, Any]]:
-        response = self.client.table("transactions").select("*").eq("id", transaction_id).execute()
-        if response.data and len(response.data) > 0:
-            row = response.data[0]
-            row["merchant_name"] = DEFAULT_MERCHANT_NAME
-            return row
-        return None
+        try:
+            response = self.client.table("transactions").select("*").eq("id", transaction_id).execute()
+            if response.data and len(response.data) > 0:
+                row = response.data[0]
+                row["merchant_name"] = DEFAULT_MERCHANT_NAME
+                return row
+        except Exception as e:
+            logger.warning(f"Supabase get_transaction failed: {e}. Checking fallback.")
+        return self.fallback.get_transaction(transaction_id)
 
     def update_transaction_status(
         self, transaction_id: str, status: str
     ) -> Optional[Dict[str, Any]]:
-        response = self.client.table("transactions").update({"status": status}).eq("id", transaction_id).execute()
-        if response.data and len(response.data) > 0:
-            row = response.data[0]
-            row["merchant_name"] = DEFAULT_MERCHANT_NAME
-            return row
-        return None
+        try:
+            response = self.client.table("transactions").update({"status": status}).eq("id", transaction_id).execute()
+            if response.data and len(response.data) > 0:
+                row = response.data[0]
+                row["merchant_name"] = DEFAULT_MERCHANT_NAME
+                self.fallback.update_transaction_status(transaction_id, status)
+                return row
+        except Exception as e:
+            logger.warning(f"Supabase update_transaction_status failed: {e}. Updating fallback.")
+        return self.fallback.update_transaction_status(transaction_id, status)
 
 
 class InMemoryDatabaseService(DatabaseService):

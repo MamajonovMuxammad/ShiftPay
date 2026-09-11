@@ -89,10 +89,17 @@ async def create_invoice(
     if amount_usdt == 0:
         amount_usdt = round(payload.amount_uzs / EXCHANGE_RATE_USDT_UZS, 4)
 
-    tx = db.create_transaction(
-        amount_uzs=payload.amount_uzs,
-        amount_usdt=amount_usdt
-    )
+    try:
+        tx = db.create_transaction(
+            amount_uzs=payload.amount_uzs,
+            amount_usdt=amount_usdt
+        )
+    except Exception as e:
+        logger.error(f"Error during create_transaction: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка создания счета: {str(e)}"
+        )
 
     # Учитываем прокси заголовки (Vercel, Cloudflare, Nginx)
     forwarded_proto = request.headers.get("x-forwarded-proto")
@@ -110,7 +117,7 @@ async def create_invoice(
         amount_usdt=tx["amount_usdt"],
         status=tx["status"],
         checkout_url=checkout_url,
-        created_at=tx["created_at"]
+        created_at=str(tx["created_at"])
     )
 
 
