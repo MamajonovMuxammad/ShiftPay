@@ -46,7 +46,13 @@ app.add_middleware(
 
 # Инициализация шаблонов Jinja2
 BASE_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = BASE_DIR / "templates"
+possible_dirs = [
+    BASE_DIR / "templates",
+    BASE_DIR.parent / "templates",
+    Path.cwd() / "templates",
+    Path("/var/task/templates")
+]
+TEMPLATES_DIR = next((p for p in possible_dirs if p.exists() and p.is_dir()), BASE_DIR / "templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
