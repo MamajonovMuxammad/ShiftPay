@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>{% block title %}Shift Pay — Crypto Acquiring{% endblock %}</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            DEFAULT: '#10b981',
+                        },
+                        dark: {
+                            base: '#080808',
+                            surface: '#0f0f10',
+                            card: '#141416',
+                            border: 'rgba(255, 255, 255, 0.08)'
+                        }
+                    },
+                    boxShadow: {
+                        'neon-emerald': '0 0 40px -10px rgba(16, 185, 129, 0.35)',
+                        'neon-glow': '0 0 25px rgba(16, 185, 129, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #080808;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Subtle Apple-style glassmorphism */
+        .glass-panel {
+            background: rgba(20, 20, 24, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-subtle {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(16, 185, 129, 0.6);
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+            outline: none;
+        }
+
+        /* Number tabular rendering */
+        .font-numbers {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
+        }
+
+        /* Ambient Glow Mesh */
+        .bg-glow-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .glow-orb-1 {
+            position: absolute;
+            top: -15%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+        }
+        .glow-orb-2 {
+            position: absolute;
+            bottom: -20%;
+            left: -15%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        /* Pulse glow animation */
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 0.9; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+        .animate-subtle-pulse {
+            animation: subtle-pulse 3s infinite ease-in-out;
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+    <!-- Ambient Background Lighting -->
+    <div class="bg-glow-mesh">
+        <div class="glow-orb-1"></div>
+        <div class="glow-orb-2"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 flex-1 flex flex-col">
+        <!-- Top Navigation / Header -->
+        <header class="w-full max-w-xl mx-auto px-6 pt-6 pb-2 flex items-center justify-between">
+            <a href="/" class="flex items-center space-x-2.5 group transition-transform active:scale-95">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 p-[1px] flex items-center justify-center shadow-neon-glow">
+                    <div class="w-full h-full bg-[#0d0d0f] rounded-[11px] flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-emerald-400 text-sm group-hover:scale-110 transition-transform"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-base font-bold tracking-tight text-white">Shift</span>
+                        <span class="text-base font-medium tracking-tight text-emerald-400">Pay</span>
+                    </div>
+                </div>
+            </a>
+            
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                    UzNEX Active
+                </span>
+            </div>
+        </header>
+
+        <!-- Dynamic Body Content -->
+        <main class="w-full max-w-xl mx-auto px-5 py-4 flex-1 flex flex-col justify-center">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Subtle Footer -->
+        <footer class="w-full max-w-xl mx-auto px-6 py-4 text-center text-xs text-neutral-500">
+            <p class="font-normal tracking-wide">Shift Pay Acquiring • 1 USDT = {{ exchange_rate|default(12700) }} UZS</p>
+        </footer>
+    </div>
+
+    <!-- Web Audio Synthesizer for Apple-like Success Tone -->
+    <script>
+        function playHapticChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                
+                // Primary pleasant bell frequency
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, now); // D5
+                osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.1); // A5
+                gain1.gain.setValueAtTime(0.18, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.6);
+
+                // Harmonic shimmer
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1174.66, now + 0.08); // D6
+                gain2.gain.setValueAtTime(0.12, now + 0.08);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.08);
+                osc2.stop(now + 0.7);
+            } catch(e) {
+                // AudioContext not allowed or not supported, ignore silently
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

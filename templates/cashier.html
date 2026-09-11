@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Shift Pay — Терминал Кассира (B2B){% endblock %}
+
+{% block extra_head %}
+<!-- qrcode.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+    /* Glow around QR wrapper */
+    .qr-container {
+        box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Animated success checkmark */
+    @keyframes checkmark-stroke {
+        100% { stroke-dashoffset: 0; }
+    }
+    @keyframes scale-up {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-success {
+        animation: scale-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .checkmark__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 3;
+        stroke-miterlimit: 10;
+        stroke: #10b981;
+        fill: none;
+        animation: checkmark-stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .checkmark__check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        stroke-width: 4;
+        stroke: #10b981;
+        fill: none;
+        animation: checkmark-stroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <!-- STEP 1: AMOUNT INPUT SCREEN -->
+    <div id="screen-input" class="transition-all duration-400">
+        <!-- Terminal Header -->
+        <div class="text-center mb-6">
+            <span class="inline-block text-[11px] font-semibold uppercase tracking-widest text-emerald-400 mb-1">
+                Кассовый Терминал
+            </span>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Выставить счет</h1>
+            <p class="text-xs text-neutral-400 mt-1">Введите сумму покупки в национальной валюте</p>
+        </div>
+
+        <!-- Big Amount Card (Apple Wallet Style) -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden mb-5">
+            <div class="text-xs font-medium uppercase tracking-wider text-neutral-400 mb-3">
+                Сумма к оплате
+            </div>
+
+            <!-- Huge borderless input with UZS label -->
+            <div class="relative flex items-center justify-center my-2">
+                <input 
+                    type="text" 
+                    id="amountInput" 
+                    inputmode="numeric" 
+                    placeholder="0" 
+                    autofocus
+                    class="w-full bg-transparent border-none text-center font-numbers text-4xl sm:text-5xl font-extralight text-white focus:outline-none placeholder:text-neutral-700 tracking-tight"
+                />
+            </div>
+            
+            <div class="text-sm font-semibold text-neutral-400 tracking-wide">
+                UZS
+            </div>
+
+            <!-- Live USDT Equivalent Badge -->
+            <div class="mt-4 inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-300">
+                <i class="fa-solid fa-calculator text-emerald-400 text-[10px]"></i>
+                <span class="font-numbers">≈ <strong id="liveUsdtPreview">0.00</strong> USDT</span>
+            </div>
+
+            <!-- Quick Amount Chips -->
+            <div class="grid grid-cols-3 gap-2 mt-6 pt-5 border-t border-white/5">
+                <button type="button" onclick="setQuickAmount(50000)" class="py-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-xs text-neutral-300 font-numbers transition-all">
+                    +50 000
+                </button>
+                <button type="button" onclick="setQuickAmount(150000)" class="py-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-xs text-neutral-300 font-numbers transition-all">
+                    +150 000
+                </button>
+                <button type="button" onclick="setQuickAmount(500000)" class="py-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-xs text-neutral-300 font-numbers transition-all">
+                    +500 000
+                </button>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+            id="btnGenerate" 
+            onclick="handleGenerateInvoice()" 
+            class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold text-base shadow-neon-emerald active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+            <i class="fa-solid fa-qrcode text-lg"></i>
+            <span>Сгенерировать QR</span>
+        </button>
+    </div>
+
+
+    <!-- STEP 2: QR CODE & PAYMENT WAITING SCREEN -->
+    <div id="screen-qr" class="hidden opacity-0 transition-all duration-400 text-center">
+        <!-- Status Indicator -->
+        <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-300 mb-4 animate-subtle-pulse">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Ожидаем оплату клиента...</span>
+        </div>
+
+        <h2 class="text-xl font-bold text-white mb-1">Покажите QR клиенту</h2>
+        <p class="text-xs text-neutral-400 mb-5">Покупатель сканирует код камерой телефона</p>
+
+        <!-- QR Plate (Apple Card High Contrast Style) -->
+        <div class="relative max-w-[280px] mx-auto p-5 bg-white rounded-3xl qr-container shadow-2xl flex flex-col items-center justify-center">
+            <div id="qrcodeCanvas" class="p-1"></div>
+            
+            <div class="mt-3 pt-3 border-t border-neutral-200 w-full flex items-center justify-between text-neutral-800 text-[11px] font-semibold">
+                <span class="flex items-center space-x-1">
+                    <i class="fa-solid fa-bolt text-emerald-600"></i>
+                    <span>Shift Pay</span>
+                </span>
+                <span class="text-neutral-500 font-mono">Tether USDT</span>
+            </div>
+        </div>
+
+        <!-- Bill Details Card -->
+        <div class="glass-panel rounded-2xl p-4 mt-5 max-w-sm mx-auto text-left space-y-2">
+            <div class="flex justify-between items-center text-xs">
+                <span class="text-neutral-400">Сумма в UZS:</span>
+                <span class="text-white font-semibold font-numbers text-sm" id="qrDisplayUzs">0 UZS</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+                <span class="text-neutral-400">Сумма в USDT:</span>
+                <span class="text-emerald-400 font-bold font-numbers text-base" id="qrDisplayUsdt">0.00 USDT</span>
+            </div>
+            <div class="flex justify-between items-center text-[11px] pt-1 border-t border-white/5 text-neutral-500">
+                <span>Курс конвертации:</span>
+                <span class="font-numbers">1 USDT = {{ exchange_rate }} UZS</span>
+            </div>
+        </div>
+
+        <!-- Action Links for Demo Convenience -->
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a 
+                id="directCheckoutLink" 
+                href="#" 
+                target="_blank" 
+                class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-emerald-300 font-medium transition-colors flex items-center justify-center space-x-1.5"
+            >
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                <span>Открыть чек в новом окне (демо)</span>
+            </a>
+            
+            <button 
+                onclick="resetTerminal()" 
+                class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white transition-colors"
+            >
+                Отмена
+            </button>
+        </div>
+    </div>
+
+
+    <!-- STEP 3: PAYMENT SUCCESS SCREEN -->
+    <div id="screen-success" class="hidden opacity-0 transition-all duration-400 text-center animate-scale-success">
+        <div class="w-24 h-24 mx-auto mb-5 relative flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl"></div>
+            <svg class="w-20 h-20" viewBox="0 0 52 52">
+                <circle class="checkmark__circle" cx="26" cy="26" r="24"/>
+                <path class="checkmark__check" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+
+        <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-emerald-400 mb-1">
+            Успешная оплата
+        </span>
+        <h2 class="text-3xl font-extrabold text-white tracking-tight mb-1">Оплачено!</h2>
+        <p class="text-xs text-neutral-400 mb-6">Средства зачислены на счет торговой точки</p>
+
+        <!-- Receipt Card -->
+        <div class="glass-panel rounded-3xl p-6 max-w-sm mx-auto text-left space-y-3 mb-6 shadow-neon-emerald">
+            <div class="flex justify-between items-center text-xs">
+                <span class="text-neutral-400">Сумма покупки:</span>
+                <span class="text-white font-medium font-numbers" id="receiptUzs">0 UZS</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+                <span class="text-neutral-400">Получено в USDT:</span>
+                <span class="text-emerald-400 font-bold font-numbers text-lg" id="receiptUsdt">0.00 USDT</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+                <span class="text-neutral-400">Статус сети:</span>
+                <span class="text-emerald-400 font-medium">Подтверждено (UzNEX)</span>
+            </div>
+            <div class="flex justify-between items-center text-[10px] text-neutral-500 pt-2 border-t border-white/5">
+                <span>ID транзакции:</span>
+                <span class="font-mono text-neutral-400 truncate max-w-[170px]" id="receiptTxId">-</span>
+            </div>
+        </div>
+
+        <button 
+            onclick="resetTerminal()" 
+            class="w-full max-w-sm mx-auto py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold text-base shadow-neon-emerald active:scale-[0.98] transition-all flex items-center justify-center space-x-2"
+        >
+            <i class="fa-solid fa-plus text-sm"></i>
+            <span>Новый счет</span>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const EXCHANGE_RATE = {{ exchange_rate }};
+    let currentTransactionId = null;
+    let pollInterval = null;
+    let qrcodeInstance = null;
+
+    const amountInput = document.getElementById('amountInput');
+    const liveUsdtPreview = document.getElementById('liveUsdtPreview');
+    const screenInput = document.getElementById('screen-input');
+    const screenQr = document.getElementById('screen-qr');
+    const screenSuccess = document.getElementById('screen-success');
+
+    // Форматирование ввода в сумах (разряды с пробелами)
+    amountInput.addEventListener('input', (e) => {
+        let rawVal = e.target.value.replace(/\D/g, '');
+        if (!rawVal) {
+            e.target.value = '';
+            liveUsdtPreview.textContent = '0.00';
+            return;
+        }
+        let num = parseInt(rawVal, 10);
+        e.target.value = num.toLocaleString('ru-RU');
+        
+        // Живой пересчет в USDT
+        const usdt = (num / EXCHANGE_RATE).toFixed(2);
+        liveUsdtPreview.textContent = usdt;
+    });
+
+    function setQuickAmount(addAmount) {
+        let currentRaw = parseInt(amountInput.value.replace(/\D/g, '') || '0', 10);
+        let total = currentRaw + addAmount;
+        amountInput.value = total.toLocaleString('ru-RU');
+        liveUsdtPreview.textContent = (total / EXCHANGE_RATE).toFixed(2);
+        amountInput.focus();
+    }
+
+    async function handleGenerateInvoice() {
+        const rawVal = amountInput.value.replace(/\D/g, '');
+        const amountUzs = parseFloat(rawVal);
+
+        if (!amountUzs || amountUzs <= 0) {
+            amountInput.classList.add('animate-shake');
+            setTimeout(() => amountInput.classList.remove('animate-shake'), 400);
+            amountInput.focus();
+            return;
+        }
+
+        const btn = document.getElementById('btnGenerate');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-lg"></i><span>Генерация...</span>`;
+
+        try {
+            const res = await fetch('/api/invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount_uzs: amountUzs })
+            });
+
+            if (!res.ok) throw new Error('Ошибка создания счета');
+            const data = await res.json();
+
+            currentTransactionId = data.transaction_id;
+            
+            // Заполнение деталей
+            document.getElementById('qrDisplayUzs').textContent = `${amountUzs.toLocaleString('ru-RU')} UZS`;
+            document.getElementById('qrDisplayUsdt').textContent = `${data.amount_usdt.toFixed(2)} USDT`;
+            document.getElementById('directCheckoutLink').href = data.checkout_url;
+
+            // Генерация QR-кода через qrcode.js
+            const qrCanvasContainer = document.getElementById('qrcodeCanvas');
+            qrCanvasContainer.innerHTML = '';
+            qrcodeInstance = new QRCode(qrCanvasContainer, {
+                text: data.checkout_url,
+                width: 200,
+                height: 200,
+                colorDark: "#080808",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            // Плавное переключение экранов
+            screenInput.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                screenInput.classList.add('hidden');
+                screenQr.classList.remove('hidden');
+                setTimeout(() => screenQr.classList.remove('opacity-0'), 20);
+            }, 300);
+
+            // Запуск Long Polling раз в секунду
+            startStatusPolling(currentTransactionId, amountUzs, data.amount_usdt);
+
+        } catch (err) {
+            alert('Не удалось создать счет: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-qrcode text-lg"></i><span>Сгенерировать QR</span>`;
+        }
+    }
+
+    function startStatusPolling(txId, uzs, usdt) {
+        if (pollInterval) clearInterval(pollInterval);
+
+        pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/transactions/${txId}`);
+                if (!res.ok) return;
+                const tx = await res.json();
+
+                if (tx.status === 'success') {
+                    clearInterval(pollInterval);
+                    onPaymentSuccess(txId, uzs, usdt);
+                }
+            } catch (e) {
+                console.warn('Polling error:', e);
+            }
+        }, 1000);
+    }
+
+    function onPaymentSuccess(txId, uzs, usdt) {
+        // Проигрывание нежного Apple-подобного звука успеха
+        playHapticChime();
+
+        // Заполнение чека
+        document.getElementById('receiptUzs').textContent = `${uzs.toLocaleString('ru-RU')} UZS`;
+        document.getElementById('receiptUsdt').textContent = `${usdt.toFixed(2)} USDT`;
+        document.getElementById('receiptTxId').textContent = txId;
+
+        // Переключение на экран успеха
+        screenQr.classList.add('opacity-0');
+        setTimeout(() => {
+            screenQr.classList.add('hidden');
+            screenSuccess.classList.remove('hidden');
+            setTimeout(() => screenSuccess.classList.remove('opacity-0'), 20);
+        }, 300);
+    }
+
+    function resetTerminal() {
+        if (pollInterval) clearInterval(pollInterval);
+        currentTransactionId = null;
+
+        screenQr.classList.add('opacity-0');
+        screenSuccess.classList.add('opacity-0');
+
+        setTimeout(() => {
+            screenQr.classList.add('hidden');
+            screenSuccess.classList.add('hidden');
+            screenInput.classList.remove('hidden');
+            setTimeout(() => {
+                screenInput.classList.remove('opacity-0', 'pointer-events-none');
+                amountInput.value = '';
+                liveUsdtPreview.textContent = '0.00';
+                amountInput.focus();
+            }, 20);
+        }, 300);
+    }
+</script>
+{% endblock %}
