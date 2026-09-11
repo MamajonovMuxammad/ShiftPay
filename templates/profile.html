@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Shift Pay — Профиль{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+    .stat-card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 14px; padding: 14px 16px; text-align: center;
+    }
+    .stat-val { font-size: 1.375rem; font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums; }
+    .stat-lbl { font-size: 0.6875rem; color: var(--text-3); margin-top: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .menu-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 0; border-bottom: 1px solid var(--border-sub);
+        cursor: pointer; text-decoration: none;
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { opacity: 0.6; }
+    .menu-item-left { display: flex; align-items: center; gap: 14px; }
+    .menu-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9375rem; flex-shrink: 0; }
+    .menu-label { font-size: 0.9375rem; font-weight: 500; color: var(--text-1); }
+    .menu-sub { font-size: 0.75rem; color: var(--text-2); margin-top: 1px; }
+
+    #toast {
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: var(--text-1); color: #fff;
+        padding: 12px 20px; border-radius: 12px;
+        font-size: 0.875rem; font-weight: 500;
+        white-space: nowrap; z-index: 200;
+        opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    #toast.show { opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="anim-in">
+
+    <!-- Avatar + name -->
+    <div style="text-align:center;margin-bottom:24px;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--brand-light);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.75rem;">
+            👤
+        </div>
+        <div style="font-size:1.125rem;font-weight:700;color:var(--text-1);">Shift Pay Demo</div>
+        <div style="font-size:0.8125rem;color:var(--text-2);margin-top:2px;">Демо-аккаунт мерчанта</div>
+        <div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;background:var(--success-light);">
+            <span style="width:5px;height:5px;border-radius:50%;background:var(--success);"></span>
+            <span style="font-size:0.6875rem;font-weight:600;color:var(--success);">Активен · UzNEX</span>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px;">
+        <div class="stat-card">
+            <div class="stat-val" style="color:var(--brand);">0</div>
+            <div class="stat-lbl">Транзакций</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">0.00</div>
+            <div class="stat-lbl">USDT Итого</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color:var(--success);">0%</div>
+            <div class="stat-lbl">Комиссия</div>
+        </div>
+    </div>
+
+    <!-- Wallet -->
+    <div class="label-xs" style="margin-bottom:10px;">Кошелёк</div>
+    <div class="card" style="padding:14px 16px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--border-sub);display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-wallet" style="color:var(--text-3);"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:0.875rem;font-weight:600;color:var(--text-2);">Не подключён</div>
+                <div style="font-size:0.75rem;color:var(--text-3);">Нет USDT адреса</div>
+            </div>
+            <a href="/wallet" style="font-size:0.8125rem;font-weight:600;color:var(--brand);text-decoration:none;">Подключить</a>
+        </div>
+    </div>
+
+    <!-- Settings menu -->
+    <div class="label-xs" style="margin-bottom:10px;">Настройки</div>
+    <div class="card" style="padding:0 16px;margin-bottom:20px;">
+
+        <div class="menu-item" onclick="toast('Магазин')">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background:#EFF6FF;">
+                    <i class="fa-solid fa-store" style="color:var(--brand);"></i>
+                </div>
+                <div>
+                    <div class="menu-label">Мой магазин</div>
+                    <div class="menu-sub">Shift Pay Flagship Store</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="menu-item" onclick="toast('Курс')">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background:#F0FDF4;">
+                    <i class="fa-solid fa-arrow-right-arrow-left" style="color:var(--success);"></i>
+                </div>
+                <div>
+                    <div class="menu-label">Курс конвертации</div>
+                    <div class="menu-sub">1 USDT = {{ exchange_rate }} UZS · UzNEX</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="menu-item" onclick="toast('Уведомления')">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background:#FFF7ED;">
+                    <i class="fa-solid fa-bell" style="color:#f97316;"></i>
+                </div>
+                <div>
+                    <div class="menu-label">Уведомления</div>
+                    <div class="menu-sub">Push при оплате</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="menu-item" onclick="toast('Безопасность')">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background:#FEF2F2;">
+                    <i class="fa-solid fa-shield-halved" style="color:var(--danger);"></i>
+                </div>
+                <div>
+                    <div class="menu-label">Безопасность</div>
+                    <div class="menu-sub">2FA, PIN-код</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+    </div>
+
+    <!-- About -->
+    <div class="label-xs" style="margin-bottom:10px;">О приложении</div>
+    <div class="card" style="padding:0 16px;margin-bottom:20px;">
+        <div class="menu-item" onclick="toast('Документация')">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background:#F5F3FF;">
+                    <i class="fa-solid fa-book" style="color:#7c3aed;"></i>
+                </div>
+                <div><div class="menu-label">Документация API</div></div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+        <div class="menu-item" style="border-bottom:none;" onclick="toast('Версия 1.0.0 · Демо')">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background:var(--border-sub);">
+                    <i class="fa-solid fa-circle-info" style="color:var(--text-3);"></i>
+                </div>
+                <div>
+                    <div class="menu-label">Версия</div>
+                    <div class="menu-sub">Shift Pay v1.0.0 · Demo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center;font-size:0.75rem;color:var(--text-3);padding-bottom:4px;">
+        Shift Pay Acquiring Demo · UzNEX Gateway
+    </div>
+</div>
+
+<div id="toast"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toast(label) {
+    const t = document.getElementById('toast');
+    t.textContent = `${label} — скоро в продакшене`;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2000);
+}
+</script>
+{% endblock %}

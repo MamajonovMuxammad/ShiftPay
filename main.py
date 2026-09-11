@@ -10,7 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 
@@ -242,6 +242,55 @@ async def page_checkout(
         }
     )
 
+
+
+@app.get("/wallet", response_class=HTMLResponse, summary="Подключение кошелька")
+@app.get("/api/index.py/wallet", response_class=HTMLResponse, include_in_schema=False)
+async def page_wallet(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="wallet.html",
+        context={"exchange_rate": int(EXCHANGE_RATE_USDT_UZS)}
+    )
+
+
+@app.get("/profile", response_class=HTMLResponse, summary="Профиль пользователя")
+@app.get("/api/index.py/profile", response_class=HTMLResponse, include_in_schema=False)
+async def page_profile(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="profile.html",
+        context={"exchange_rate": int(EXCHANGE_RATE_USDT_UZS)}
+    )
+
+
+@app.get("/api/events/{transaction_id}", summary="SSE: Push-уведомление об изменении статуса")
+@app.get("/api/index.py/api/events/{transaction_id}", include_in_schema=False)
+async def payment_events(
+    transaction_id: str,
+    db: DatabaseService = Depends(get_db)
+):
+    """Server-Sent Events endpoint — pushes a 'paid' event as soon as the transaction status becomes 'success'."""
+    import asyncio
+
+    async def event_generator():
+        for _ in range(60):  # max 60 seconds
+            tx = db.get_transaction(transaction_id)
+            if tx and tx["status"] == "success":
+                yield f"data: paid\n\n"
+                return
+            yield f": ping\n\n"  # keep-alive comment
+            await asyncio.sleep(1)
+        yield f"data: timeout\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+    )
 
 
 if __name__ == "__main__":

@@ -3,314 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>{% block title %}Shift Pay — Crypto Acquiring{% endblock %}</title>
-    
-    <!-- Google Fonts: Inter -->
+    <title>{% block title %}Shift Pay{% endblock %}</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            200: '#bbf7d0',
-                            400: '#4ade80',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            DEFAULT: '#22c55e',
-                        },
-                    },
-                    boxShadow: {
-                        'card': '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-                        'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
-                        'elevated': '0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)',
-                    },
-                    borderRadius: {
-                        '2xl': '1rem',
-                        '3xl': '1.25rem',
-                        '4xl': '1.5rem',
-                    }
-                }
-            }
-        }
-    </script>
-    
+
     <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
+        *, *::before, *::after {
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
-            --bg: #f8f9fb;
-            --surface: #ffffff;
-            --border: #e8eaed;
-            --border-subtle: #f0f2f5;
-            --text-primary: #1a1a1a;
-            --text-secondary: #5f6368;
-            --text-tertiary: #9aa0a6;
-            --brand: #1a73e8;
-            --brand-hover: #1557b0;
-            --brand-light: #e8f0fe;
-            --success: #188038;
+            --bg:            #f5f7fa;
+            --surface:       #ffffff;
+            --border:        #e4e7ec;
+            --border-sub:    #f0f2f5;
+            --text-1:        #111827;
+            --text-2:        #6b7280;
+            --text-3:        #9ca3af;
+
+            /* Brand — Google Blue */
+            --brand:         #1a73e8;
+            --brand-hover:   #1557b0;
+            --brand-light:   #e8f0fe;
+
+            /* Success — Google Green */
+            --success:       #188038;
             --success-light: #e6f4ea;
-            --danger: #d93025;
+
+            /* Danger */
+            --danger:        #d93025;
+            --danger-light:  #fce8e6;
+
+            /* Nav */
+            --nav-h:         64px;
+            --nav-bg:        rgba(255,255,255,0.92);
+            --nav-active:    var(--brand);
+            --nav-inactive:  #9ca3af;
         }
+
+        html, body { height: 100%; }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-primary);
+            background: var(--bg);
+            color: var(--text-1);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            overflow-x: hidden;
         }
 
-        /* Cards */
+        /* ── Layout ── */
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .app-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .app-logo-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: var(--brand);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
+        }
+        .app-logo-text {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--text-1);
+            letter-spacing: -0.01em;
+        }
+        .app-logo-text span { color: var(--brand); }
+
+        .badge-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 100px;
+            background: var(--success-light);
+            color: var(--success);
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+        .badge-live .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: blink-dot 2s infinite;
+        }
+        @keyframes blink-dot {
+            0%,100%{ opacity:1; } 50%{ opacity:0.3; }
+        }
+
+        .app-main {
+            flex: 1;
+            padding: 20px 20px calc(var(--nav-h) + 16px);
+        }
+
+        /* ── Bottom Nav ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: var(--nav-h);
+            background: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 8px;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            z-index: 50;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            text-decoration: none;
+            color: var(--nav-inactive);
+            font-size: 0.625rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            padding: 6px 0;
+            border-radius: 12px;
+            transition: color 0.15s ease, background 0.15s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .nav-item:active { background: var(--border-sub); }
+        .nav-item.active { color: var(--nav-active); }
+        .nav-item i { font-size: 1.1rem; transition: transform 0.15s ease; }
+        .nav-item:active i { transform: scale(0.88); }
+
+        /* Scanner button — pill center */
+        .nav-scan-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            text-decoration: none;
+            color: var(--nav-inactive);
+            font-size: 0.625rem;
+            font-weight: 500;
+        }
+        .nav-scan-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--brand);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 12px rgba(26,115,232,0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .nav-scan-btn:active .nav-scan-icon {
+            transform: scale(0.91);
+            box-shadow: 0 2px 6px rgba(26,115,232,0.25);
+        }
+        .nav-scan-label { color: var(--nav-inactive); }
+
+        /* ── Cards ── */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 16px;
-            box-shadow: var(--card-shadow, 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04));
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-
-        .card-elevated {
+        .card-lg {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
-        /* Inputs */
-        .form-input {
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            color: var(--text-primary);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
             font-family: inherit;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 0.9375rem;
+            width: 100%;
         }
-        .form-input:focus {
-            border-color: var(--brand);
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
-            outline: none;
-        }
-
-        /* Primary button — Google Blue */
+        .btn:active { transform: scale(0.97); }
         .btn-primary {
             background: var(--brand);
             color: #fff;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            letter-spacing: 0.01em;
-            transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-            border: none;
-            cursor: pointer;
         }
-        .btn-primary:hover {
-            background: var(--brand-hover);
-            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.28);
-        }
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Secondary button */
-        .btn-secondary {
+        .btn-primary:hover { background: var(--brand-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-ghost {
             background: transparent;
             color: var(--brand);
             border: 1.5px solid var(--border);
-            border-radius: 10px;
             font-weight: 500;
-            font-size: 0.875rem;
-            transition: background 0.2s ease, border-color 0.2s ease;
-            cursor: pointer;
         }
-        .btn-secondary:hover {
-            background: var(--brand-light);
+        .btn-ghost:hover { background: var(--brand-light); border-color: var(--brand); }
+
+        /* ── Inputs ── */
+        .input {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-1);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            padding: 12px 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .input:focus {
             border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
         }
 
-        /* Number fonts */
-        .font-numbers {
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
-        }
-
-        /* Divider */
-        .divider {
-            border: none;
-            border-top: 1px solid var(--border-subtle);
-        }
-
-        /* Status badge */
-        .badge-live {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 100px;
-            background: var(--success-light);
-            color: var(--success);
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-live .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* Page transitions */
-        @keyframes fade-up {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-up {
-            animation: fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        @keyframes scale-in {
-            from { opacity: 0; transform: scale(0.96); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .animate-scale-in {
-            animation: scale-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        /* Checkmark animation */
-        @keyframes checkmark-stroke {
-            100% { stroke-dashoffset: 0; }
-        }
-        .checkmark__circle {
-            stroke-dasharray: 166;
-            stroke-dashoffset: 166;
-            stroke-width: 2;
-            stroke: #188038;
-            fill: none;
-            animation: checkmark-stroke 0.55s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-        .checkmark__check {
-            transform-origin: 50% 50%;
-            stroke-dasharray: 48;
-            stroke-dashoffset: 48;
-            stroke-width: 3;
-            stroke: #188038;
-            fill: none;
-            animation: checkmark-stroke 0.35s cubic-bezier(0.65, 0, 0.45, 1) 0.45s forwards;
-        }
-
-        /* Row items */
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            font-size: 0.8125rem;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .detail-row:last-child { border-bottom: none; }
-        .detail-row .label { color: var(--text-secondary); }
-        .detail-row .value { color: var(--text-primary); font-weight: 500; }
-
-        /* Section label */
-        .section-label {
+        /* ── Typography helpers ── */
+        .label-xs {
             font-size: 0.6875rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.07em;
-            color: var(--text-tertiary);
+            color: var(--text-3);
         }
+        .font-num {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+
+        /* ── Detail rows ── */
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 0;
+            font-size: 0.8125rem;
+            border-bottom: 1px solid var(--border-sub);
+        }
+        .row:last-child { border-bottom: none; padding-bottom: 0; }
+        .row .lbl { color: var(--text-2); }
+        .row .val { color: var(--text-1); font-weight: 500; }
+
+        /* ── Checkmark SVG ── */
+        @keyframes stroke { 100%{ stroke-dashoffset: 0; } }
+        .cm-circle {
+            stroke-dasharray: 166; stroke-dashoffset: 166;
+            stroke-width: 2; stroke: var(--success); fill: none;
+            animation: stroke 0.55s cubic-bezier(0.65,0,0.45,1) forwards;
+        }
+        .cm-check {
+            stroke-dasharray: 48; stroke-dashoffset: 48;
+            stroke-width: 3; stroke: var(--success); fill: none;
+            transform-origin: 50% 50%;
+            animation: stroke 0.35s cubic-bezier(0.65,0,0.45,1) 0.5s forwards;
+        }
+
+        /* ── Page transitions ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim-in { animation: fadeUp 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* ── Screen transitions ── */
+        .screen { transition: opacity 0.25s ease; }
+        .screen.out { opacity: 0; pointer-events: none; }
+
+        /* ── Section title ── */
+        .page-title { font-size: 1.1875rem; font-weight: 700; color: var(--text-1); }
+        .page-sub { font-size: 0.8125rem; color: var(--text-2); margin-top: 2px; }
     </style>
-    
+
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
+<div class="app-shell">
+    <!-- Top bar -->
+    <header class="app-topbar">
+        <a href="/" class="app-logo">
+            <div class="app-logo-icon"><i class="fa-solid fa-bolt"></i></div>
+            <span class="app-logo-text">Shift<span>Pay</span></span>
+        </a>
+        <div class="badge-live"><span class="dot"></span>UzNEX Live</div>
+    </header>
 
-    <!-- Main Container -->
-    <div class="flex-1 flex flex-col">
-        <!-- Top Navigation / Header -->
-        <header class="w-full max-w-lg mx-auto px-5 pt-5 pb-2 flex items-center justify-between">
-            <a href="/" class="flex items-center space-x-2.5 transition-opacity hover:opacity-75 active:opacity-50">
-                <!-- Logo mark -->
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: var(--brand);">
-                    <i class="fa-solid fa-bolt text-white text-xs"></i>
-                </div>
-                <div>
-                    <span class="text-sm font-bold tracking-tight" style="color: var(--text-primary);">Shift</span><span class="text-sm font-bold tracking-tight" style="color: var(--brand);">Pay</span>
-                </div>
-            </a>
-            
-            <div class="badge-live">
-                <span class="dot"></span>
-                UzNEX
-            </div>
-        </header>
+    <!-- Page content -->
+    <main class="app-main">
+        {% block content %}{% endblock %}
+    </main>
 
-        <!-- Dynamic Body Content -->
-        <main class="w-full max-w-lg mx-auto px-5 py-4 flex-1 flex flex-col justify-center">
-            {% block content %}{% endblock %}
-        </main>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item {% block nav_home %}{% endblock %}" id="nav-home">
+            <i class="fa-solid fa-house"></i>
+            <span>Главная</span>
+        </a>
 
-        <!-- Footer -->
-        <footer class="w-full max-w-lg mx-auto px-5 py-4 text-center" style="color: var(--text-tertiary); font-size: 0.75rem;">
-            <p>Shift Pay Acquiring &nbsp;·&nbsp; 1 USDT = {{ exchange_rate|default(12700) }} UZS</p>
-        </footer>
-    </div>
+        <a href="/cashier" class="nav-item {% block nav_cashier %}{% endblock %}" id="nav-cashier">
+            <i class="fa-solid fa-cash-register"></i>
+            <span>Кассир</span>
+        </a>
 
-    <!-- Web Audio Success Tone -->
-    <script>
-        function playHapticChime() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const now = ctx.currentTime;
-                const osc1 = ctx.createOscillator();
-                const gain1 = ctx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(587.33, now);
-                osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.1);
-                gain1.gain.setValueAtTime(0.15, now);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                osc1.start(now); osc1.stop(now + 0.6);
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(1174.66, now + 0.08);
-                gain2.gain.setValueAtTime(0.1, now + 0.08);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start(now + 0.08); osc2.stop(now + 0.7);
-            } catch(e) {}
-        }
-    </script>
-    {% block scripts %}{% endblock %}
+        <a href="/scanner" class="nav-scan-btn" id="nav-scanner">
+            <div class="nav-scan-icon"><i class="fa-solid fa-qrcode"></i></div>
+            <span class="nav-scan-label">Скан</span>
+        </a>
+
+        <a href="/wallet" class="nav-item {% block nav_wallet %}{% endblock %}" id="nav-wallet">
+            <i class="fa-solid fa-wallet"></i>
+            <span>Кошелёк</span>
+        </a>
+
+        <a href="/profile" class="nav-item {% block nav_profile %}{% endblock %}" id="nav-profile">
+            <i class="fa-solid fa-circle-user"></i>
+            <span>Профиль</span>
+        </a>
+    </nav>
+</div>
+
+<script>
+    function playHapticChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const now = ctx.currentTime;
+            [[587.33, 0, 0.14, 0.6],[1174.66, 0.08, 0.1, 0.7]].forEach(([freq, delay, vol, end]) => {
+                const o = ctx.createOscillator(), g = ctx.createGain();
+                o.type = 'sine'; o.frequency.setValueAtTime(freq, now + delay);
+                g.gain.setValueAtTime(vol, now + delay);
+                g.gain.exponentialRampToValueAtTime(0.001, now + end);
+                o.connect(g); g.connect(ctx.destination);
+                o.start(now + delay); o.stop(now + end);
+            });
+        } catch(e) {}
+    }
+</script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

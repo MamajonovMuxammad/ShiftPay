@@ -1,181 +1,125 @@
 {% extends "base.html" %}
-
-{% block title %}Shift Pay — Оплата счета {{ tx.amount_usdt }} USDT{% endblock %}
+{% block title %}Shift Pay — Оплата {{ "%.2f"|format(tx.amount_usdt) }} USDT{% endblock %}
 
 {% block extra_head %}
 <style>
-    @keyframes scale-success {
-        from { opacity: 0; transform: scale(0.94); }
-        to { opacity: 1; transform: scale(1); }
-    }
-    .animate-success { animation: scale-success 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    @keyframes suc-in { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
+    .suc-anim { animation: suc-in 0.32s cubic-bezier(0.22,1,0.36,1) both; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="w-full max-w-md mx-auto animate-fade-up">
+<div class="anim-in">
 
-    <!-- SCREEN 1: PAYMENT CONFIRMATION -->
-    <div id="checkoutCard" class="{% if tx.status == 'success' %}hidden{% endif %}">
+    <!-- SCREEN 1: CONFIRM PAYMENT -->
+    <div id="s-checkout" class="screen" {% if tx.status == 'success' %}style="display:none;"{% endif %}>
 
-        <!-- Merchant row -->
-        <div class="flex items-center justify-between p-3.5 mb-4 card" style="border-radius: 12px; background: var(--bg);">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--brand-light);">
-                    <i class="fa-solid fa-store text-xs" style="color: var(--brand);"></i>
+        <!-- Merchant strip -->
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:10px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand);">
+                    <i class="fa-solid fa-store" style="font-size:0.875rem;"></i>
                 </div>
                 <div>
-                    <div class="text-sm font-semibold" style="color: var(--text-primary);">{{ tx.merchant_name|default('Shift Pay Flagship Store') }}</div>
-                    <div class="text-xs" style="color: var(--text-secondary);">Официальный мерчант</div>
+                    <div style="font-weight:600;font-size:0.875rem;color:var(--text-1);">{{ tx.merchant_name|default('Shift Pay Flagship Store') }}</div>
+                    <div style="font-size:0.6875rem;color:var(--text-2);">Официальный мерчант</div>
                 </div>
             </div>
-            <div class="flex items-center space-x-1 text-xs font-medium" style="color: var(--success);">
-                <i class="fa-solid fa-circle-check text-xs"></i>
-                <span>Проверен</span>
+            <div style="display:flex;align-items:center;gap:4px;font-size:0.6875rem;font-weight:600;color:var(--success);">
+                <i class="fa-solid fa-circle-check"></i> Проверен
             </div>
         </div>
 
-        <!-- Main Amount Card -->
-        <div class="card p-6 sm:p-8 text-center mb-4" style="border-radius: 20px;">
-            <p class="section-label mb-3">К оплате</p>
-
-            <!-- USDT Amount -->
-            <div class="my-2">
-                <span class="font-numbers font-light" style="font-size: 3.25rem; letter-spacing: -0.04em; color: var(--text-primary);">
+        <!-- Amount card -->
+        <div class="card-lg" style="padding:28px 24px;text-align:center;margin-bottom:14px;">
+            <div class="label-xs" style="margin-bottom:12px;">К оплате</div>
+            <div>
+                <span class="font-num" style="font-size:3.25rem;font-weight:300;letter-spacing:-0.04em;color:var(--text-1);">
                     {{ "%.2f"|format(tx.amount_usdt) }}
                 </span>
-                <span class="font-bold ml-1" style="font-size: 1.375rem; color: var(--brand);">USDT</span>
+                <span style="font-size:1.5rem;font-weight:700;color:var(--brand);margin-left:6px;">USDT</span>
             </div>
-
-            <!-- UZS equivalent -->
-            <div class="text-sm font-numbers" style="color: var(--text-tertiary);">
+            <div class="font-num" style="font-size:0.875rem;color:var(--text-3);margin-top:6px;">
                 ≈ {{ "{:,.0f}".format(tx.amount_uzs).replace(',', ' ') }} UZS
             </div>
 
-            <!-- Details -->
-            <div class="mt-5 pt-4 text-left" style="border-top: 1px solid var(--border-subtle);">
-                <div class="detail-row">
-                    <span class="label">Курс обмена</span>
-                    <span class="value font-numbers">1 USDT = {{ exchange_rate }} UZS</span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">Сеть шлюза</span>
-                    <span class="value">UzNEX / Tether TRC-20</span>
-                </div>
-                <div class="detail-row" style="border-bottom: none; padding-bottom: 0;">
-                    <span class="label">Комиссия эквайринга</span>
-                    <span class="font-medium text-sm" style="color: var(--success);">0 USDT — Без комиссии</span>
-                </div>
+            <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border-sub);text-align:left;">
+                <div class="row"><span class="lbl">Курс обмена</span><span class="val font-num">1 USDT = {{ exchange_rate }} UZS</span></div>
+                <div class="row"><span class="lbl">Сеть</span><span class="val">UzNEX / TRC-20</span></div>
+                <div class="row"><span class="lbl">Комиссия</span><span style="color:var(--success);font-weight:600;font-size:0.8125rem;">0 USDT — бесплатно</span></div>
             </div>
         </div>
 
-        <!-- Pay Button -->
-        <button
-            id="btnConfirmPay"
-            onclick="handleConfirmPayment('{{ tx.id }}')"
-            class="btn-primary w-full py-4 flex items-center justify-center space-x-2"
-            style="font-size: 0.9375rem; border-radius: 14px;"
-        >
-            <i class="fa-solid fa-lock text-sm"></i>
-            <span>Подтвердить платеж</span>
+        <!-- Pay button -->
+        <button id="btnPay" onclick="confirmPayment('{{ tx.id }}')" class="btn btn-primary" style="margin-bottom:10px;">
+            <i class="fa-solid fa-lock" style="font-size:0.875rem;"></i> Подтвердить платёж
         </button>
 
-        <p class="text-center mt-3 flex items-center justify-center space-x-1" style="font-size: 0.6875rem; color: var(--text-tertiary);">
+        <div style="text-align:center;font-size:0.6875rem;color:var(--text-3);display:flex;align-items:center;justify-content:center;gap:4px;">
             <i class="fa-solid fa-shield"></i>
-            <span>Безопасная транзакция через смарт-контракт Shift Pay</span>
-        </p>
+            Безопасная транзакция через смарт-контракт Shift Pay
+        </div>
     </div>
 
 
     <!-- SCREEN 2: SUCCESS -->
-    <div id="successCard" class="{% if tx.status != 'success' %}hidden opacity-0{% endif %} text-center animate-success">
-        <!-- Success icon -->
-        <div class="w-20 h-20 mx-auto mb-4 flex items-center justify-center rounded-full" style="background: var(--success-light);">
-            <svg class="w-14 h-14" viewBox="0 0 52 52">
-                <circle class="checkmark__circle" cx="26" cy="26" r="24"/>
-                <path class="checkmark__check" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
+    <div id="s-success" class="screen {% if tx.status != 'success' %}suc-hidden{% endif %}" 
+         style="text-align:center;{% if tx.status != 'success' %}display:none;{% endif %}">
+        <div class="suc-anim">
+            <div style="width:76px;height:76px;border-radius:50%;background:var(--success-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                    <circle class="cm-circle" cx="26" cy="26" r="24"/>
+                    <path class="cm-check" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+            <span class="label-xs" style="color:var(--success);">Платёж завершён</span>
+            <div class="page-title" style="margin-top:4px;">Транзакция подтверждена</div>
+            <div class="page-sub" style="margin-bottom:20px;">Средства переведены мерчанту</div>
+
+            <div class="card" style="padding:16px;text-align:left;margin-bottom:16px;">
+                <div class="row"><span class="lbl">Оплачено</span><span class="val font-num" style="color:var(--success);font-size:1.0625rem;font-weight:700;">{{ "%.2f"|format(tx.amount_usdt) }} USDT</span></div>
+                <div class="row"><span class="lbl">Сумма чека</span><span class="val font-num">{{ "{:,.0f}".format(tx.amount_uzs).replace(',', ' ') }} UZS</span></div>
+                <div class="row"><span class="lbl">Получатель</span><span class="val">{{ tx.merchant_name|default('Shift Pay Flagship Store') }}</span></div>
+                <div class="row"><span class="lbl" style="color:var(--text-3);font-size:0.75rem;">Хеш</span><span style="font-size:0.6875rem;color:var(--brand);font-family:monospace;">0x7f9a…e41c</span></div>
+            </div>
+
+            <a href="/" class="btn btn-ghost" style="text-decoration:none;">Вернуться на главную</a>
         </div>
-
-        <p class="section-label mb-1" style="color: var(--success);">Платеж завершен</p>
-        <h2 class="text-2xl font-bold mb-1" style="color: var(--text-primary);">Транзакция подтверждена</h2>
-        <p class="text-sm mb-5" style="color: var(--text-secondary);">Средства списаны и переведены мерчанту</p>
-
-        <!-- Digital Receipt -->
-        <div class="card p-5 text-left mb-5" style="border-radius: 16px;">
-            <div class="detail-row">
-                <span class="label">Оплачено</span>
-                <span class="font-numbers font-bold text-base" style="color: var(--success);">
-                    {{ "%.2f"|format(tx.amount_usdt) }} USDT
-                </span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Сумма чека</span>
-                <span class="value font-numbers">{{ "{:,.0f}".format(tx.amount_uzs).replace(',', ' ') }} UZS</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Получатель</span>
-                <span class="value">{{ tx.merchant_name|default('Shift Pay Flagship Store') }}</span>
-            </div>
-            <div class="detail-row" style="border-bottom: none; padding-bottom: 0;">
-                <span class="label" style="font-size: 0.75rem; color: var(--text-tertiary);">Хеш блокчейна</span>
-                <span class="font-mono text-xs truncate max-w-[160px]" style="color: var(--brand);">0x7f9a...e41c</span>
-            </div>
-        </div>
-
-        <a
-            href="/"
-            class="btn-secondary block w-full py-3.5 text-center text-sm font-medium"
-            style="text-decoration: none;"
-        >
-            Вернуться на главную
-        </a>
     </div>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    async function handleConfirmPayment(txId) {
-        const btn = document.getElementById('btnConfirmPay');
-        btn.disabled = true;
-        btn.innerHTML = `
-            <i class="fa-solid fa-circle-notch fa-spin"></i>
-            <span>Обработка в UzNEX...</span>
-        `;
+async function confirmPayment(txId) {
+    const btn = document.getElementById('btnPay');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Обработка в UzNEX…';
 
-        try {
-            const res = await fetch(`/api/pay/${txId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || 'Ошибка обработки платежа');
-            }
-
-            playHapticChime();
-
-            const checkoutCard = document.getElementById('checkoutCard');
-            const successCard = document.getElementById('successCard');
-
-            checkoutCard.style.opacity = '0';
-            checkoutCard.style.pointerEvents = 'none';
-            setTimeout(() => {
-                checkoutCard.classList.add('hidden');
-                successCard.classList.remove('hidden');
-                requestAnimationFrame(() => successCard.classList.remove('opacity-0'));
-            }, 280);
-
-        } catch (err) {
-            alert('Не удалось провести платеж: ' + err.message);
-            btn.disabled = false;
-            btn.innerHTML = `
-                <i class="fa-solid fa-lock text-sm"></i>
-                <span>Подтвердить платеж</span>
-            `;
+    try {
+        const res = await fetch(`/api/pay/${txId}`, {
+            method: 'POST', headers: {'Content-Type':'application/json'}
+        });
+        if (!res.ok) {
+            const e = await res.json().catch(()=>({}));
+            throw new Error(e.detail || 'Ошибка');
         }
+        playHapticChime();
+
+        const sc = document.getElementById('s-checkout');
+        const ss = document.getElementById('s-success');
+        sc.style.opacity = '0'; sc.style.pointerEvents = 'none';
+        setTimeout(() => {
+            sc.style.display = 'none';
+            ss.style.display = 'block';
+        }, 250);
+
+    } catch(err) {
+        alert('Не удалось провести платёж: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-lock" style="font-size:0.875rem;"></i> Подтвердить платёж';
     }
+}
 </script>
 {% endblock %}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Shift Pay — Подключение кошелька{% endblock %}
+{% block nav_wallet %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+    .wallet-card {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 16px;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+    }
+    .wallet-card:hover { border-color: var(--brand); background: var(--brand-light); }
+    .wallet-card:active { transform: scale(0.98); }
+    .wallet-card.connected { border-color: var(--success); background: var(--success-light); }
+
+    .w-logo {
+        width: 42px; height: 42px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.375rem; flex-shrink: 0;
+    }
+    .w-name { font-weight: 600; font-size: 0.9375rem; color: var(--text-1); }
+    .w-desc { font-size: 0.75rem; color: var(--text-2); margin-top: 1px; }
+
+    /* Toast */
+    #toast {
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: var(--text-1); color: #fff;
+        padding: 12px 20px; border-radius: 12px;
+        font-size: 0.875rem; font-weight: 500;
+        white-space: nowrap; z-index: 200;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.2s;
+    }
+    #toast.show { opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="anim-in">
+    <div style="margin-bottom:20px;">
+        <span class="label-xs" style="color:var(--brand);">USDT Кошелёк</span>
+        <div class="page-title" style="margin-top:4px;">Подключить кошелёк</div>
+        <div class="page-sub">Выберите биржу или кошелёк для получения USDT</div>
+    </div>
+
+    <!-- Connected placeholder -->
+    <div class="card" style="padding:16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--border-sub);display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-wallet" style="color:var(--text-3);"></i>
+        </div>
+        <div style="flex:1;">
+            <div style="font-size:0.875rem;font-weight:600;color:var(--text-1);">Кошелёк не подключён</div>
+            <div style="font-size:0.75rem;color:var(--text-2);">Выберите ниже для подключения</div>
+        </div>
+        <span class="label-xs" style="padding:4px 10px;border-radius:100px;background:var(--border-sub);">Демо</span>
+    </div>
+
+    <!-- Crypto Exchanges -->
+    <div class="label-xs" style="margin-bottom:10px;">Биржи</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+
+        <div class="wallet-card" onclick="mockConnect('Binance')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#FEF3C7;">🟡</div>
+                <div>
+                    <div class="w-name">Binance</div>
+                    <div class="w-desc">Binance Pay · TRC-20 / BEP-20</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="wallet-card" onclick="mockConnect('Bybit')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#FEE2E2;">🔴</div>
+                <div>
+                    <div class="w-name">Bybit</div>
+                    <div class="w-desc">Bybit Pay · TRC-20</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="wallet-card" onclick="mockConnect('OKX')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#F3F4F6;">⚫</div>
+                <div>
+                    <div class="w-name">OKX</div>
+                    <div class="w-desc">OKX Wallet · Multi-chain</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="wallet-card" onclick="mockConnect('HTX')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#DBEAFE;">🔵</div>
+                <div>
+                    <div class="w-name">HTX (Huobi)</div>
+                    <div class="w-desc">HTX Wallet · TRC-20 / ERC-20</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+    </div>
+
+    <!-- Web3 Wallets -->
+    <div class="label-xs" style="margin-bottom:10px;">Web3 кошельки</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+
+        <div class="wallet-card" onclick="mockConnect('Trust Wallet')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#EDE9FE;">🔷</div>
+                <div>
+                    <div class="w-name">Trust Wallet</div>
+                    <div class="w-desc">WalletConnect · TRC-20</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="wallet-card" onclick="mockConnect('MetaMask')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#FFF7ED;">🦊</div>
+                <div>
+                    <div class="w-name">MetaMask</div>
+                    <div class="w-desc">EVM · ERC-20 / BEP-20</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+
+        <div class="wallet-card" onclick="mockConnect('Tonkeeper')">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="w-logo" style="background:#EFF6FF;">💎</div>
+                <div>
+                    <div class="w-name">Tonkeeper</div>
+                    <div class="w-desc">TON Network · USDT-TON</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-3);font-size:0.75rem;"></i>
+        </div>
+    </div>
+
+    <!-- Info banner -->
+    <div class="card" style="padding:14px 16px;background:var(--brand-light);border-color:rgba(26,115,232,0.15);display:flex;gap:10px;align-items:flex-start;">
+        <i class="fa-solid fa-circle-info" style="color:var(--brand);margin-top:2px;flex-shrink:0;"></i>
+        <div style="font-size:0.8125rem;color:#1557b0;line-height:1.5;">
+            <strong>Демо-режим.</strong> Подключение кошелька симулировано. В продакшене здесь будет реальная интеграция через WalletConnect и биржевые API.
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function mockConnect(name) {
+    showToast(`✓ ${name} подключён (демо)`);
+}
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+{% endblock %}
