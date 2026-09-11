@@ -66,6 +66,7 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
     status_code=status.HTTP_201_CREATED,
     summary="Создание счета на оплату (Терминал кассира)"
 )
+@app.post("/api/index.py/api/invoice", response_model=InvoiceResponse, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_invoice(
     payload: InvoiceCreate,
     request: Request,
@@ -118,6 +119,7 @@ async def create_invoice(
     response_model=TransactionResponse,
     summary="Получение статуса транзакции (Long Polling)"
 )
+@app.get("/api/index.py/api/transactions/{transaction_id}", response_model=TransactionResponse, include_in_schema=False)
 async def get_transaction(
     transaction_id: str,
     db: DatabaseService = Depends(get_db)
@@ -148,6 +150,7 @@ async def get_transaction(
     response_model=PaymentResponse,
     summary="Подтверждение и обработка платежа клиентом"
 )
+@app.post("/api/index.py/api/pay/{transaction_id}", response_model=PaymentResponse, include_in_schema=False)
 async def process_payment(
     transaction_id: str,
     gateway: CryptoGatewayAdapter = Depends(get_gateway)
@@ -181,6 +184,9 @@ async def process_payment(
 # ==========================================
 
 @app.get("/", response_class=HTMLResponse, summary="Главная страница (Выбор интерфейса)")
+@app.get("/api/index.py", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/api/index", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/api", response_class=HTMLResponse, include_in_schema=False)
 async def page_index(request: Request):
     return templates.TemplateResponse(
         request=request,
@@ -190,6 +196,7 @@ async def page_index(request: Request):
 
 
 @app.get("/cashier", response_class=HTMLResponse, summary="Терминал кассира")
+@app.get("/api/index.py/cashier", response_class=HTMLResponse, include_in_schema=False)
 async def page_cashier(request: Request):
     return templates.TemplateResponse(
         request=request,
@@ -199,6 +206,7 @@ async def page_cashier(request: Request):
 
 
 @app.get("/scanner", response_class=HTMLResponse, summary="Сканнер QR-кода покупателя")
+@app.get("/api/index.py/scanner", response_class=HTMLResponse, include_in_schema=False)
 async def page_scanner(request: Request):
     return templates.TemplateResponse(
         request=request,
@@ -208,6 +216,7 @@ async def page_scanner(request: Request):
 
 
 @app.get("/checkout/{transaction_id}", response_class=HTMLResponse, summary="Экран оплаты покупателя")
+@app.get("/api/index.py/checkout/{transaction_id}", response_class=HTMLResponse, include_in_schema=False)
 async def page_checkout(
     request: Request,
     transaction_id: str,
