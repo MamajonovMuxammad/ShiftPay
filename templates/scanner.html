@@ -1,113 +1,133 @@
 {% extends "base.html" %}
 
-{% block title %}Shift Pay — Сканнер QR (B2C){% endblock %}
+{% block title %}Shift Pay — Сканнер QR{% endblock %}
 
 {% block extra_head %}
 <!-- html5-qrcode CDN -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-    /* Neon scanner laser animation */
+    /* Scanner laser — clean blue line */
     @keyframes laser-sweep {
-        0% { top: 5%; opacity: 0.8; }
-        50% { top: 90%; opacity: 1; }
-        100% { top: 5%; opacity: 0.8; }
+        0%   { top: 8%; opacity: 1; }
+        50%  { top: 87%; opacity: 0.7; }
+        100% { top: 8%; opacity: 1; }
     }
     .scanner-laser {
         position: absolute;
-        left: 5%;
-        right: 5%;
+        left: 8%;
+        right: 8%;
         height: 2px;
-        background: linear-gradient(90deg, transparent, #10b981, #34d399, transparent);
-        box-shadow: 0 0 15px #10b981, 0 0 5px #34d399;
-        animation: laser-sweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        background: var(--brand);
+        border-radius: 2px;
+        animation: laser-sweep 2.2s ease-in-out infinite;
         pointer-events: none;
         z-index: 20;
+        box-shadow: 0 0 6px rgba(26, 115, 232, 0.6);
     }
 
-    /* Target frame corners */
-    .corner-tl { top: -2px; left: -2px; border-top: 3px solid #10b981; border-left: 3px solid #10b981; }
-    .corner-tr { top: -2px; right: -2px; border-top: 3px solid #10b981; border-right: 3px solid #10b981; }
-    .corner-bl { bottom: -2px; left: -2px; border-bottom: 3px solid #10b981; border-left: 3px solid #10b981; }
-    .corner-br { bottom: -2px; right: -2px; border-bottom: 3px solid #10b981; border-right: 3px solid #10b981; }
+    /* Finder corners */
+    .corner { position: absolute; width: 20px; height: 20px; z-index: 20; }
+    .corner-tl { top: -1px; left: -1px; border-top: 2.5px solid var(--brand); border-left: 2.5px solid var(--brand); border-radius: 6px 0 0 0; }
+    .corner-tr { top: -1px; right: -1px; border-top: 2.5px solid var(--brand); border-right: 2.5px solid var(--brand); border-radius: 0 6px 0 0; }
+    .corner-bl { bottom: -1px; left: -1px; border-bottom: 2.5px solid var(--brand); border-left: 2.5px solid var(--brand); border-radius: 0 0 0 6px; }
+    .corner-br { bottom: -1px; right: -1px; border-bottom: 2.5px solid var(--brand); border-right: 2.5px solid var(--brand); border-radius: 0 0 6px 0; }
 
     #reader video {
-        border-radius: 1.5rem !important;
+        border-radius: 14px !important;
         object-fit: cover !important;
         width: 100% !important;
     }
-    #reader {
-        border: none !important;
+    #reader { border: none !important; }
+
+    /* File input label */
+    .file-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .file-label:hover {
+        border-color: var(--brand);
+        color: var(--brand);
+        background: var(--brand-light);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="w-full text-center">
+<div class="w-full text-center animate-fade-up">
     <!-- Header -->
-    <div class="mb-4">
-        <span class="inline-block text-[11px] font-semibold uppercase tracking-widest text-emerald-400 mb-1">
-            Камера покупателя
-        </span>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Отсканируйте QR-код</h1>
-        <p class="text-xs text-neutral-400 mt-1">Наведите видоискатель на QR-код терминала Shift Pay</p>
+    <div class="mb-5">
+        <p class="section-label mb-1">Камера покупателя</p>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary);">Отсканируйте QR-код</h1>
+        <p class="text-sm mt-1" style="color: var(--text-secondary);">Наведите видоискатель на QR-код терминала</p>
     </div>
 
-    <!-- Scanner Viewport (80% width) -->
-    <div class="relative w-[85%] max-w-[320px] aspect-square mx-auto rounded-3xl overflow-hidden glass-panel p-2 shadow-2xl border border-white/10 mb-5">
-        <!-- Corner Reticles -->
-        <div class="absolute w-6 h-6 corner-tl rounded-tl-lg z-20"></div>
-        <div class="absolute w-6 h-6 corner-tr rounded-tr-lg z-20"></div>
-        <div class="absolute w-6 h-6 corner-bl rounded-bl-lg z-20"></div>
-        <div class="absolute w-6 h-6 corner-br rounded-br-lg z-20"></div>
+    <!-- Scanner viewport -->
+    <div class="relative w-[82%] max-w-[300px] aspect-square mx-auto mb-5 overflow-hidden rounded-2xl" style="background: #111; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.10);">
+        <!-- Finder corners -->
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
 
-        <!-- Laser Line -->
+        <!-- Laser line -->
         <div id="scannerLaser" class="scanner-laser"></div>
 
-        <!-- Video Reader Element -->
-        <div id="reader" class="w-full h-full rounded-2xl overflow-hidden bg-black/60 flex items-center justify-center">
-            <div id="cameraLoading" class="text-neutral-500 text-xs flex flex-col items-center space-y-2">
-                <i class="fa-solid fa-circle-notch fa-spin text-emerald-400 text-xl"></i>
-                <span>Запуск камеры...</span>
+        <!-- Video element -->
+        <div id="reader" class="w-full h-full flex items-center justify-center">
+            <div id="cameraLoading" class="flex flex-col items-center space-y-2">
+                <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--brand); font-size: 1.25rem;"></i>
+                <span class="text-xs" style="color: var(--text-tertiary);">Запуск камеры...</span>
             </div>
         </div>
     </div>
 
-    <!-- Scanner Controls & Fallbacks -->
+    <!-- Status and controls -->
     <div class="space-y-3 max-w-sm mx-auto">
-        <div id="scanStatus" class="text-xs text-neutral-400">
-            Идет поиск QR-кода...
+        <div id="scanStatus" class="text-sm" style="color: var(--text-secondary);">Идет поиск QR-кода...</div>
+
+        <!-- Camera error -->
+        <div id="cameraError" class="hidden p-3 rounded-xl text-xs" style="background: #fce8e6; color: var(--danger); border: 1px solid #f5c2be;">
+            <i class="fa-solid fa-camera mr-1"></i>
+            Камера недоступна или доступ запрещен. Используйте загрузку фото или ручной ввод.
         </div>
 
-        <!-- Camera Permission Warning (if blocked) -->
-        <div id="cameraError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
-            <i class="fa-solid fa-camera mr-1 text-red-400"></i>
-            <span>Камера недоступна или доступ запрещен. Используйте загрузку фото или ручной ввод.</span>
-        </div>
+        <!-- Fallback: upload image -->
+        <label class="file-label">
+            <i class="fa-solid fa-image" style="color: var(--brand);"></i>
+            <span>Выбрать изображение с QR-кодом</span>
+            <input type="file" id="qrFileInput" accept="image/*" class="hidden">
+        </label>
 
-        <!-- Fallback Actions for PC / Demo -->
-        <div class="pt-2 flex flex-col space-y-2">
-            <label class="cursor-pointer py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-300 font-medium transition-colors flex items-center justify-center space-x-2 border border-white/10">
-                <i class="fa-solid fa-image text-emerald-400"></i>
-                <span>Выбрать изображение с QR-кодом</span>
-                <input type="file" id="qrFileInput" accept="image/*" class="hidden">
-            </label>
+        <!-- Manual ID input toggle -->
+        <button onclick="toggleManualInput()" class="text-xs underline" style="background: none; border: none; cursor: pointer; color: var(--text-tertiary);">
+            Ввести код транзакции вручную
+        </button>
 
-            <!-- Manual ID input toggle -->
-            <button onclick="toggleManualInput()" class="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors underline">
-                Ввести код транзакции вручную
+        <div id="manualInputContainer" class="hidden pt-1 space-y-2">
+            <input
+                type="text"
+                id="manualTxId"
+                placeholder="Вставьте UUID транзакции..."
+                class="form-input w-full px-3 py-2.5 text-xs font-mono text-center"
+                style="color: var(--text-primary); font-size: 0.8125rem;"
+            />
+            <button
+                onclick="handleManualSubmit()"
+                class="btn-primary w-full py-2.5 text-sm"
+            >
+                Перейти к оплате
             </button>
-
-            <div id="manualInputContainer" class="hidden pt-2 space-y-2">
-                <input 
-                    type="text" 
-                    id="manualTxId" 
-                    placeholder="Вставьте UUID транзакции..." 
-                    class="w-full px-3 py-2 rounded-xl glass-input text-xs text-white placeholder:text-neutral-600 font-mono text-center"
-                />
-                <button onclick="handleManualSubmit()" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
-                    Перейти к оплате
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -124,11 +144,10 @@
 
             const config = {
                 fps: 15,
-                qrbox: { width: 250, height: 250 },
+                qrbox: { width: 230, height: 230 },
                 aspectRatio: 1.0
             };
 
-            // Автоматический запрос к задней камере смартфона (environment)
             await html5QrCode.start(
                 { facingMode: "environment" },
                 config,
@@ -138,53 +157,44 @@
 
             document.getElementById('cameraLoading').style.display = 'none';
         } catch (err) {
-            console.warn("Камера не найдена или доступ отклонен:", err);
             document.getElementById('cameraLoading').innerHTML = `
-                <i class="fa-solid fa-video-slash text-neutral-600 text-2xl mb-1"></i>
-                <span class="text-neutral-500 text-[11px]">Камера недоступна на данном устройстве</span>
+                <i class="fa-solid fa-video-slash" style="font-size: 1.5rem; color: var(--text-tertiary); margin-bottom: 4px;"></i>
+                <span style="font-size: 0.75rem; color: var(--text-tertiary);">Камера недоступна</span>
             `;
             document.getElementById('cameraError').classList.remove('hidden');
             document.getElementById('scannerLaser').style.display = 'none';
         }
     }
 
-    function onScanSuccess(decodedText, decodedResult) {
+    function onScanSuccess(decodedText) {
         if (isRedirecting) return;
         isRedirecting = true;
 
         playHapticChime();
         document.getElementById('scanStatus').innerHTML = `
-            <span class="text-emerald-400 font-semibold">
-                <i class="fa-solid fa-check mr-1"></i>QR-код распознан! Переход...
+            <span style="color: var(--success); font-weight: 600;">
+                <i class="fa-solid fa-check mr-1"></i>QR распознан! Переход...
             </span>
         `;
 
-        // Остановка сканнера перед переходом
         if (html5QrCode && html5QrCode.isScanning) {
             html5QrCode.stop().catch(console.error);
         }
 
-        // Если отсканирован полный URL
         if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
             window.location.href = decodedText;
         } else if (decodedText.length === 36) {
-            // Если отсканирован просто UUID транзакции
             window.location.href = `/checkout/${decodedText}`;
         } else {
-            // Относительный путь или любой другой формат
             window.location.href = decodedText;
         }
     }
 
-    function onScanFailure(error) {
-        // Обычные промежуточные кадры без QR, логировать не требуется
-    }
+    function onScanFailure(error) {}
 
-    // Загрузка QR из файла
     document.getElementById('qrFileInput').addEventListener('change', async (e) => {
         if (e.target.files.length === 0) return;
         const imageFile = e.target.files[0];
-
         try {
             if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
             const decodedText = await html5QrCode.scanFile(imageFile, true);
@@ -195,18 +205,13 @@
     });
 
     function toggleManualInput() {
-        const container = document.getElementById('manualInputContainer');
-        container.classList.toggle('hidden');
+        document.getElementById('manualInputContainer').classList.toggle('hidden');
     }
 
     function handleManualSubmit() {
         const val = document.getElementById('manualTxId').value.trim();
         if (!val) return;
-        if (val.startsWith('http')) {
-            window.location.href = val;
-        } else {
-            window.location.href = `/checkout/${val}`;
-        }
+        window.location.href = val.startsWith('http') ? val : `/checkout/${val}`;
     }
 
     window.addEventListener('DOMContentLoaded', initScanner);

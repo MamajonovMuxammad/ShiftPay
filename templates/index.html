@@ -3,90 +3,74 @@
 {% block title %}Shift Pay — Демо Эквайринга{% endblock %}
 
 {% block content %}
-<div class="space-y-6 animate-fade-in">
+<div class="space-y-4 animate-fade-up">
     <!-- Hero Header -->
-    <div class="text-center space-y-2 pt-2 pb-4">
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-neutral-400 mb-2">
-            <i class="fa-solid fa-shield-halved text-emerald-400"></i>
-            <span>B2C Crypto Acquiring Terminal</span>
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Крипто-эквайринг <br>
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500">
-                нового поколения
-            </span>
+    <div class="text-center space-y-2 pt-2 pb-3">
+        <p class="section-label">B2C Crypto Acquiring Terminal</p>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">
+            Крипто-эквайринг
         </h1>
-        <p class="text-sm text-neutral-400 max-w-sm mx-auto">
-            Мгновенный расчет в национальной валюте (UZS) с конвертацией в USDT для офлайн-ритейла.
+        <p class="text-sm" style="color: var(--text-secondary); max-width: 280px; margin: 0 auto; line-height: 1.5;">
+            Мгновенный расчет в UZS с конвертацией в USDT для офлайн-ритейла
         </p>
     </div>
 
     <!-- Mode Selector Cards -->
     <div class="space-y-3">
         <!-- Cashier Terminal Option -->
-        <a href="/cashier" class="group block relative p-5 rounded-3xl glass-panel hover:border-emerald-500/40 hover:shadow-neon-emerald transition-all duration-300 transform active:scale-[0.98]">
+        <a href="/cashier" class="group block card p-4 transition-all duration-200 hover:shadow-card-hover active:scale-[0.99]" style="border-radius: 16px; text-decoration: none;">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-13 h-13 w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-cash-register"></i>
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: var(--brand-light);">
+                        <i class="fa-solid fa-cash-register" style="color: var(--brand); font-size: 1rem;"></i>
                     </div>
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <h2 class="text-lg font-semibold text-white group-hover:text-emerald-300 transition-colors">
-                                Терминал Кассира
-                            </h2>
-                            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                B2B
-                            </span>
+                        <div class="flex items-center space-x-2 mb-0.5">
+                            <span class="text-sm font-semibold" style="color: var(--text-primary);">Терминал Кассира</span>
+                            <span class="section-label px-2 py-0.5 rounded-full" style="background: var(--brand-light); color: var(--brand);">B2B</span>
                         </div>
-                        <p class="text-xs text-neutral-400 mt-0.5">
-                            Ввод суммы в UZS, генерация QR и отслеживание статуса оплаты
-                        </p>
+                        <p class="text-xs" style="color: var(--text-secondary);">Ввод суммы, генерация QR и отслеживание оплаты</p>
                     </div>
                 </div>
-                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:translate-x-1 transition-all">
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                <div class="transition-transform group-hover:translate-x-0.5">
+                    <i class="fa-solid fa-chevron-right text-xs" style="color: var(--text-tertiary);"></i>
                 </div>
             </div>
         </a>
 
         <!-- Customer Scanner Option -->
-        <a href="/scanner" class="group block relative p-5 rounded-3xl glass-panel hover:border-emerald-500/40 hover:shadow-neon-emerald transition-all duration-300 transform active:scale-[0.98]">
+        <a href="/scanner" class="group block card p-4 transition-all duration-200 hover:shadow-card-hover active:scale-[0.99]" style="border-radius: 16px; text-decoration: none;">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500/20 to-emerald-500/5 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xl group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-qrcode"></i>
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: var(--success-light);">
+                        <i class="fa-solid fa-qrcode" style="color: var(--success); font-size: 1rem;"></i>
                     </div>
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <h2 class="text-lg font-semibold text-white group-hover:text-teal-300 transition-colors">
-                                Сканнер Покупателя
-                            </h2>
-                            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20">
-                                B2C
-                            </span>
+                        <div class="flex items-center space-x-2 mb-0.5">
+                            <span class="text-sm font-semibold" style="color: var(--text-primary);">Сканнер Покупателя</span>
+                            <span class="section-label px-2 py-0.5 rounded-full" style="background: var(--success-light); color: var(--success);">B2C</span>
                         </div>
-                        <p class="text-xs text-neutral-400 mt-0.5">
-                            Считывание камерой телефона и подтверждение платежа в USDT
-                        </p>
+                        <p class="text-xs" style="color: var(--text-secondary);">Сканирование QR камерой и подтверждение платежа</p>
                     </div>
                 </div>
-                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:translate-x-1 transition-all">
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                <div class="transition-transform group-hover:translate-x-0.5">
+                    <i class="fa-solid fa-chevron-right text-xs" style="color: var(--text-tertiary);"></i>
                 </div>
             </div>
         </a>
     </div>
 
-    <!-- Live Rate & Gateway Status Card -->
-    <div class="p-4 rounded-2xl glass-subtle flex items-center justify-between text-xs text-neutral-400">
-        <div class="flex items-center space-x-2.5">
-            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
-            <span>Шлюз UzNEX: <strong class="text-neutral-200">Онлайн (0% комиссия)</strong></span>
+    <!-- Live Rate Card -->
+    <div class="card p-3.5 flex items-center justify-between" style="border-radius: 12px; background: var(--border-subtle);">
+        <div class="flex items-center space-x-2">
+            <span class="badge-live" style="background: none; padding: 0; gap: 5px;">
+                <span class="dot"></span>
+                <span style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">UzNEX: <strong style="color: var(--text-primary);">Онлайн (0% комиссия)</strong></span>
+            </span>
         </div>
-        <div class="font-numbers text-neutral-300">
-            1 USDT = <span class="text-emerald-400 font-semibold">{{ exchange_rate }}</span> UZS
-        </div>
+        <span class="font-numbers text-xs font-medium" style="color: var(--text-secondary);">
+            1 USDT = <span style="color: var(--text-primary); font-weight: 600;">{{ exchange_rate }}</span> UZS
+        </span>
     </div>
 </div>
 {% endblock %}
